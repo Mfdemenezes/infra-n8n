@@ -253,9 +253,9 @@ done
 echo "=== Testando conectividade do N8N ==="
 for i in {1..20}; do
     # Testar múltiplas portas
-    N8N_PORT_5678=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5678/healthz 2>/dev/null || echo "000")
-    TRAEFIK_PORT_80=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80 2>/dev/null || echo "000")
-    TRAEFIK_DASHBOARD=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 2>/dev/null || echo "000")
+    N8N_PORT_5678=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:5678/healthz 2>/dev/null || echo "000")
+    TRAEFIK_PORT_80=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:80 2>/dev/null || echo "000")
+    TRAEFIK_DASHBOARD=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:8080 2>/dev/null || echo "000")
     
     echo "Tentativa $i/20:"
     echo "  - N8N (5678): HTTP $N8N_PORT_5678"
@@ -300,8 +300,8 @@ ps aux | grep docker
 
 # Verificação final de funcionamento
 echo "=== Verificação final de funcionamento ==="
-FINAL_CHECK_N8N=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5678 2>/dev/null || echo "000")
-FINAL_CHECK_TRAEFIK=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80 2>/dev/null || echo "000")
+FINAL_CHECK_N8N=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:5678 2>/dev/null || echo "000")
+FINAL_CHECK_TRAEFIK=$(curl -s -o /dev/null -w "%%{http_code}" http://localhost:80 2>/dev/null || echo "000")
 
 if [ "$FINAL_CHECK_N8N" != "000" ] || [ "$FINAL_CHECK_TRAEFIK" != "000" ]; then
     echo "✅ SUCESSO: Serviços N8N estão funcionando!"
