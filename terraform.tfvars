@@ -6,7 +6,7 @@ environment = "Dev"
 ec2_instance_type = "t2.micro"
 ec2_count         = 1
 ec2_name          = "my_instancia"
-enable_ssm        = false  # Desabilitar SSM para evitar problemas de permissão IAM
+enable_ssm        = true   # Habilitar SSM Session Manager
 
 
 # Configurações de rede
