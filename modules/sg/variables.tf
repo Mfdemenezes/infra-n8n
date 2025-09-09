@@ -8,8 +8,20 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "vpc_cidr" {
+  description = "CIDR block da VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "alb_security_group_ids" {
+  description = "IDs dos security groups do ALB"
+  type        = list(string)
+  default     = []
+}
+
 variable "ingress_rules" {
-  description = "Lista de regras de entrada"
+  description = "Lista de regras de entrada customizadas (opcional)"
   type = list(object({
     from_port   = number
     to_port     = number
@@ -17,33 +29,11 @@ variable "ingress_rules" {
     cidr_blocks = list(string)
     description = string
   }))
-  default = [
-    {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTP"
-    },
-    {
-      from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTPS"
-    },
-    {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "SSH"
-    }
-  ]
+  default = []
 }
 
 variable "egress_rules" {
-  description = "Lista de regras de saída"
+  description = "Lista de regras de saída customizadas (opcional)"
   type = list(object({
     from_port   = number
     to_port     = number
@@ -51,13 +41,5 @@ variable "egress_rules" {
     cidr_blocks = list(string)
     description = string
   }))
-  default = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "All outbound traffic"
-    }
-  ]
+  default = []
 }

@@ -22,24 +22,30 @@ provider "aws" {
   region = var.region
 }
 
-# Módulo Network
+# Módulo Network com Subnets Públicas e Privadas
 module "network" {
   source = "./modules/network"
 
   project_name            = var.ec2_name
   vpc_cidr                = var.vpc_cidr
-  subnet_cidr             = var.subnet_cidr
-  availability_zone       = var.availability_zone
-  map_public_ip_on_launch = true
+  public_subnet_cidr_a    = var.public_subnet_cidr_a
+  public_subnet_cidr_b    = var.public_subnet_cidr_b
+  private_subnet_cidr_a   = var.private_subnet_cidr_a
+  private_subnet_cidr_b   = var.private_subnet_cidr_b
+  availability_zone_a     = var.availability_zone_a
+  availability_zone_b     = var.availability_zone_b
 }
 
-# Módulo Security Group
+# Módulo Security Group para EC2 Privada
 module "security_group" {
   source = "./modules/sg"
 
-  project_name = var.ec2_name
-  vpc_id       = module.network.vpc_id
-
+  project_name              = var.ec2_name
+  vpc_id                    = module.network.vpc_id
+  vpc_cidr                  = var.vpc_cidr
+  alb_security_group_ids    = [module.alb.alb_security_group_id]
+  
+  # Manter regras customizadas se houver
   ingress_rules = var.sg_ingress_rules
   egress_rules  = var.sg_egress_rules
 }
@@ -57,7 +63,7 @@ module "s3" {
   bucket_name           = var.s3_bucket_name
 }
 
-# Módulo EC2
+# Módulo EC2 em Subnet Privada
 module "ec2" {
   source = "./modules/ec2"
 
@@ -65,8 +71,8 @@ module "ec2" {
   instance_count     = var.ec2_count
   instance_type      = var.ec2_instance_type
   ami_id             = data.aws_ami.amazon_linux.id
-  subnet_id          = module.network.subnet_id
-  security_group_ids = [module.security_group.security_group_id]
+  subnet_id          = module.network.private_subnet_a_id  # Usando subnet privada
+  security_group_ids = module.security_group.security_group_ids
 
   ebs_volume_size       = var.ebs_volume_size
   ebs_volume_type       = var.ebs_volume_type
@@ -75,4 +81,27 @@ module "ec2" {
 
   enable_ssm = var.enable_ssm
   user_data  = var.custom_user_data
+}
+
+# Módulo Application Load Balancer
+module "alb" {
+  source = "./modules/alb"
+
+  project_name       = var.ec2_name
+  environment        = var.environment
+  vpc_id             = module.network.vpc_id
+  vpc_cidr           = var.vpc_cidr
+  public_subnet_ids  = module.network.public_subnet_ids
+  instance_ids       = module.ec2.instance_ids
+}
+
+# Módulo CloudFront Distribution
+module "cloudfront" {
+  source = "./modules/cloudfront"
+
+  project_name    = var.ec2_name
+  environment     = var.environment
+  alb_dns_name    = module.alb.alb_dns_name
+  enable_waf      = var.enable_cloudfront_waf
+  price_class     = var.cloudfront_price_class
 }
