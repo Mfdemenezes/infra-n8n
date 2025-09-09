@@ -4,22 +4,22 @@ resource "aws_security_group" "sg" {
   description = "Security group para EC2 ${var.project_name}"
   vpc_id      = var.vpc_id
 
-  # HTTP do ALB apenas
+  # HTTP - temporariamente permitindo da VPC (será restrito ao ALB depois)
   ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = var.alb_security_group_ids
-    description     = "HTTP from ALB"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "HTTP from VPC (temp - will be restricted to ALB)"
   }
 
-  # HTTPS do ALB apenas  
+  # HTTPS - temporariamente permitindo da VPC
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = var.alb_security_group_ids
-    description     = "HTTPS from ALB"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+    description = "HTTPS from VPC (temp - will be restricted to ALB)"
   }
 
   # N8N direct port (apenas para debug via SSM)
