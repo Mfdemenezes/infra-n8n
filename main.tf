@@ -2,7 +2,7 @@
 terraform {
   backend "s3" {
     bucket = "terraform-state-marcelo-menezes" # Mude para um nome único
-    key    = "udemy-06/terraform.tfstate"
+    key    = "infra-n8n/terraform.tfstate"
     region = "us-east-1"
   }
 
