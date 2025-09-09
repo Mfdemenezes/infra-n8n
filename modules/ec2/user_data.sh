@@ -55,12 +55,12 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
-      - "--certificatesresolvers.mytlschallenge.acme.email=\$${SSL_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.mytlschallenge.acme.email=admin@example.com"
       - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"  # Dashboard do Traefik
+      - "8080:8080"
     volumes:
       - ./acme.json:/letsencrypt/acme.json
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -72,10 +72,10 @@ services:
     container_name: n8n
     restart: always
     ports:
-      - "5678:5678"  # Porta direta para debug
+      - "5678:5678"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(\`localhost\`) || PathPrefix(\`/\`)
+      - traefik.http.routers.n8n.rule=Host(`localhost`) || PathPrefix(`/`)
       - traefik.http.routers.n8n.entrypoints=web
       - traefik.http.services.n8n.loadbalancer.server.port=5678
     environment:
@@ -83,7 +83,7 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - NODE_ENV=production
-      - GENERIC_TIMEZONE=\$${GENERIC_TIMEZONE:-America/Sao_Paulo}
+      - GENERIC_TIMEZONE=America/Sao_Paulo
       - N8N_METRICS=true
       - N8N_LOG_LEVEL=info
       - DB_TYPE=sqlite
