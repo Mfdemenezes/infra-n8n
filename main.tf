@@ -40,10 +40,9 @@ module "network" {
 module "security_group" {
   source = "./modules/sg"
 
-  project_name              = var.ec2_name
-  vpc_id                    = module.network.vpc_id
-  vpc_cidr                  = var.vpc_cidr
-  # alb_security_group_ids    = [module.alb.alb_security_group_id]  # Comentado temporariamente
+  project_name   = var.ec2_name
+  vpc_id         = module.network.vpc_id
+  vpc_cidr       = var.vpc_cidr
   
   # Manter regras customizadas se houver
   ingress_rules = var.sg_ingress_rules
@@ -72,7 +71,7 @@ module "ec2" {
   instance_type      = var.ec2_instance_type
   ami_id             = data.aws_ami.amazon_linux.id
   subnet_id          = module.network.private_subnet_a_id  # Usando subnet privada
-  security_group_ids = [module.security_group.security_group_id]  # Voltando ao original temporariamente
+  security_group_ids = [module.security_group.security_group_id]
 
   ebs_volume_size       = var.ebs_volume_size
   ebs_volume_type       = var.ebs_volume_type
@@ -83,24 +82,22 @@ module "ec2" {
   user_data  = var.custom_user_data
 }
 
-# MÓDULOS COMENTADOS TEMPORARIAMENTE PARA VALIDAÇÃO GRADUAL
-# 
 # # Módulo Application Load Balancer
 # module "alb" {
 #   source = "./modules/alb"
-# 
-#   project_name       = var.ec2_name
-#   environment        = var.environment
-#   vpc_id             = module.network.vpc_id
-#   vpc_cidr           = var.vpc_cidr
-#   public_subnet_ids  = module.network.public_subnet_ids
-#   instance_ids       = module.ec2.instance_ids
+
+#   project_name        = var.ec2_name
+#   environment         = var.environment
+#   vpc_id              = module.network.vpc_id
+#   vpc_cidr            = var.vpc_cidr
+#   public_subnet_ids   = module.network.public_subnet_ids
+#   instance_ids        = module.ec2.instance_ids
 # }
-# 
+
 # # Módulo CloudFront Distribution
 # module "cloudfront" {
 #   source = "./modules/cloudfront"
-# 
+
 #   project_name    = var.ec2_name
 #   environment     = var.environment
 #   alb_dns_name    = module.alb.alb_dns_name

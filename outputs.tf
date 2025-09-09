@@ -19,40 +19,58 @@ output "nat_gateway_id" {
   value       = module.network.nat_gateway_id
 }
 
-# OUTPUTS COMENTADOS TEMPORARIAMENTE PARA VALIDAÇÃO GRADUAL
-# 
 # # Outputs do ALB
 # output "alb_dns_name" {
 #   description = "DNS name do Application Load Balancer"
 #   value       = module.alb.alb_dns_name
 # }
-# 
+
 # output "alb_arn" {
 #   description = "ARN do Application Load Balancer"
 #   value       = module.alb.alb_arn
 # }
-# 
+
+# output "alb_url" {
+#   description = "URL completa do ALB para acessar N8N"
+#   value       = "http://${module.alb.alb_dns_name}"
+# }
+
 # # Outputs do CloudFront
 # output "cloudfront_domain_name" {
 #   description = "Domain name do CloudFront distribution"
 #   value       = module.cloudfront.cloudfront_domain_name
 # }
-# 
+
 # output "cloudfront_url" {
-#   description = "URL completa do CloudFront"
+#   description = "URL completa do CloudFront (RECOMENDADA)"
 #   value       = module.cloudfront.cloudfront_url
 # }
-# 
+
 # output "cloudfront_distribution_id" {
 #   description = "ID do CloudFront distribution"
 #   value       = module.cloudfront.cloudfront_distribution_id
 # }
 
-# Outputs de segurança
-output "security_group_ids" {
-  description = "IDs dos Security Groups"
-  value       = [module.security_group.security_group_id]  # Simplificado temporariamente
-}
+# output "alb_security_group_id" {
+#   description = "ID do Security Group do ALB"
+#   value       = module.alb.alb_security_group_id
+# }
+
+# # URLs de Acesso ao N8N
+# output "n8n_access_urls" {
+#   description = "URLs de acesso ao N8N"
+#   value = {
+#     cloudfront_https = module.cloudfront.cloudfront_url
+#     alb_http         = "http://${module.alb.alb_dns_name}"
+#     primary_url      = module.cloudfront.cloudfront_url
+#   }
+# }
+
+# # Outputs de segurança
+# output "security_group_ids" {
+#   description = "IDs dos Security Groups"
+#   value       = [module.security_group.security_group_id, module.alb.alb_security_group_id]
+# }
 
 # output "alb_security_group_id" {
 #   description = "ID do Security Group do ALB"
