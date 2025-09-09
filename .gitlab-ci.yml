@@ -1,0 +1,191 @@
+# ===============================================
+# GitLab CI/CD Pipeline para Terraform AWS
+# ===============================================
+# 
+# Esta pipeline automatiza o deploy da infraestrutura AWS usando Terraform
+# com backend remoto S3 para gerenciamento de state
+# 
+# Etapas da Pipeline:
+# 1. VALIDATE - Valida sintaxe e formatação do código Terraform
+# 2. PLAN     - Cria plano de execução mostrando mudanças a serem feitas
+# 3. DEPLOY   - Aplica as mudanças na infraestrutura AWS
+# 4. DESTROY  - Remove toda a infraestrutura (manual)
+
+image:
+  name: hashicorp/terraform:1.8.5
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+# ===============================================
+# VARIÁVEIS GLOBAIS
+# ===============================================
+variables:
+  TF_ROOT: ${CI_PROJECT_DIR}
+  TF_IN_AUTOMATION: "true"
+  TF_CLI_ARGS: "-no-color"
+  AWS_DEFAULT_REGION: "us-east-1"
+
+# ===============================================
+# CACHE E OTIMIZAÇÃO
+# ===============================================
+# Cache dos arquivos do Terraform para acelerar builds subsequentes
+# Inclui: providers, lock files e state files
+cache:
+  key: terraform-cache-$CI_COMMIT_REF_SLUG
+  paths:
+    - .terraform
+    - .terraform.lock.hcl
+    - terraform.tfstate
+    - terraform.tfstate.backup
+
+# ===============================================
+# CONFIGURAÇÃO INICIAL (BEFORE_SCRIPT)
+# ===============================================
+# Executado antes de cada job para preparar o ambiente
+# - Instala AWS CLI se necessário
+# - Verifica credenciais AWS
+# - Inicializa Terraform com backend S3
+before_script:
+  - cd ${TF_ROOT}
+  - echo "Verificando ferramentas..."
+  - terraform --version
+  - which aws || apk add --no-cache aws-cli
+  - echo "Verificando credenciais AWS..."
+  - aws sts get-caller-identity
+  - echo "Inicializando Terraform..."
+  - terraform init
+
+# ===============================================
+# STAGES DA PIPELINE
+# ===============================================
+stages:
+  - validate  # Validação de sintaxe e formatação
+  - plan      # Criação do plano de execução
+  - deploy    # Deploy da infraestrutura
+
+# ===============================================
+# JOB 1: VALIDATE
+# ===============================================
+# Objetivo: Validar sintaxe e formatação do código Terraform
+# - Verifica se todos os arquivos .tf estão bem formatados
+# - Valida sintaxe e configuração do Terraform
+# - Executa em todas as branches
+# - Falha rápido se houver erros de sintaxe
+validate:
+  stage: validate
+  script:
+    - echo "Validando configuracao Terraform..."
+    - terraform fmt -check -recursive  # Verifica formatação
+    - terraform validate               # Valida sintaxe
+    - echo "Validacao concluida!"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ===============================================
+# JOB 2: PLAN
+# ===============================================
+# Objetivo: Criar plano de execução mostrando mudanças
+# - Gera arquivo tfplan com todas as mudanças planejadas
+# - Mostra preview das alterações na infraestrutura
+# - Salva artifacts para uso no stage de deploy
+# - Executa em todas as branches
+plan:
+  stage: plan
+  script:
+    - echo "Criando plano de execucao..."
+    - terraform plan -out=tfplan      # Cria plano de execução
+    - terraform show tfplan           # Mostra detalhes do plano
+  artifacts:
+    paths:
+      - tfplan                        # Arquivo do plano
+      - terraform.tfstate             # State atual
+      - terraform.tfstate.backup      # Backup do state
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ===============================================
+# JOB 3A: DEPLOY AUTOMÁTICO (PRODUÇÃO)
+# ===============================================
+# Objetivo: Deploy automático na branch main (produção)
+# - Aplica automaticamente as mudanças planejadas
+# - Executa APENAS na branch main
+# - Salva outputs e state files como artifacts
+# - Ambiente: production
+deploy-auto:
+  stage: deploy
+  script:
+    - echo "Deploy automatico na branch main..."
+    - terraform apply -auto-approve tfplan    # Aplica mudanças
+    - terraform output -json > outputs.json   # Salva outputs
+    - echo "Deploy concluido!"
+  artifacts:
+    paths:
+      - outputs.json                          # Outputs da infraestrutura
+      - terraform.tfstate                     # State atualizado
+      - terraform.tfstate.backup              # Backup do state
+    expire_in: 30 days
+  dependencies:
+    - plan                                    # Depende do job plan
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"        # Só na branch main
+  environment:
+    name: production
+    url: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1
+
+# ===============================================
+# JOB 3B: DEPLOY MANUAL (DESENVOLVIMENTO)
+# ===============================================
+# Objetivo: Deploy manual para branches de desenvolvimento
+# - Requer aprovação manual para executar
+# - Executa em todas as branches exceto main
+# - Ambiente: development
+# - Permite testes antes do merge para main
+deploy-manual:
+  stage: deploy
+  script:
+    - echo "Deploy manual em branch de desenvolvimento..."
+    - terraform apply -auto-approve tfplan    # Aplica mudanças
+    - terraform output -json > outputs.json   # Salva outputs
+    - echo "Deploy concluido!"
+  artifacts:
+    paths:
+      - outputs.json                          # Outputs da infraestrutura
+      - terraform.tfstate                     # State atualizado
+      - terraform.tfstate.backup              # Backup do state
+    expire_in: 7 days
+  dependencies:
+    - plan                                    # Depende do job plan
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"        # Todas exceto main
+      when: manual                            # Requer aprovação manual
+  environment:
+    name: development
+    url: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1
+
+# ===============================================
+# JOB 4: DESTROY (MANUAL)
+# ===============================================
+# Objetivo: Destruir TODA a infraestrutura
+# ⚠️  ATENÇÃO: Esta ação é IRREVERSÍVEL!
+# - Remove todos os recursos AWS criados pelo Terraform
+# - Requer aprovação manual para executar
+# - Inclui delay de segurança de 5 segundos
+# - Disponível em todas as branches
+# - Use com EXTREMA cautela!
+destroy:
+  stage: deploy
+  script:
+    - echo "DESTRUINDO INFRAESTRUTURA!"
+    - echo "Esta acao e IRREVERSIVEL!"
+    - sleep 5                                 # Delay de segurança
+    - terraform destroy -auto-approve         # Remove todos os recursos
+    - echo "Infraestrutura destruida!"
+  rules:
+    - if: $CI_COMMIT_BRANCH                   # Disponível em todas as branches
+      when: manual                            # Sempre requer aprovação manual
+      allow_failure: false                    # Não permite falha
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    action: stop                              # Marca ambiente como parado

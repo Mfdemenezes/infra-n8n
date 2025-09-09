@@ -1,0 +1,34 @@
+name: 🧪 Test Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_message:
+        description: 'Test message'
+        required: false
+        default: 'Hello from GitHub Actions!'
+        type: string
+
+jobs:
+  test:
+    name: 🧪 Test Job
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🎯 Echo Test Message
+        run: |
+          echo "🧪 Test message: ${{ github.event.inputs.test_message }}"
+          echo "✅ Workflow is working correctly!"
+          echo "📂 Repository: ${{ github.repository }}"
+          echo "🌿 Branch: ${{ github.ref_name }}"
+
+      - name: 📋 List Terraform Files
+        run: |
+          echo "📋 Terraform files in repository:"
+          find . -name "*.tf" -type f | head -10
+          echo ""
+          echo "📁 Directory structure:"
+          ls -la
