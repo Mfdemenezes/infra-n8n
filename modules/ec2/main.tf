@@ -31,9 +31,10 @@ resource "aws_instance" "instance" {
     }
 
   }
-  # User data script personalizado ou padrão
+  # User data script personalizado ou N8N
   user_data = var.user_data != "" ? var.user_data : templatefile("${path.module}/user_data.sh", {
     project_name = var.project_name
+    timezone     = var.generic_timezone
   })
   # Tags para a instância EC2
   tags = {

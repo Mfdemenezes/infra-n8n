@@ -65,3 +65,9 @@ variable "enable_ssm" {
   type        = bool
   default     = true
 }
+
+variable "generic_timezone" {
+  description = "Timezone para configuração do N8N"
+  type        = string
+  default     = "America/Sao_Paulo"
+}
