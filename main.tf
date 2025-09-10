@@ -84,7 +84,7 @@ module "ec2" {
 
 # Application Load Balancer inline
 resource "aws_lb" "main" {
-  name               = "${var.ec2_name}-alb"
+  name               = "${replace(var.ec2_name, "_", "-")}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -100,7 +100,7 @@ resource "aws_lb" "main" {
 
 # Security Group para ALB
 resource "aws_security_group" "alb" {
-  name        = "${var.ec2_name}-alb-sg"
+  name        = "${replace(var.ec2_name, "_", "-")}-alb-sg"
   description = "Security group para Application Load Balancer"
   vpc_id      = module.network.vpc_id
 
@@ -132,13 +132,13 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "${var.ec2_name}-alb-sg"
+    Name = "${replace(var.ec2_name, "_", "-")}-alb-sg"
   }
 }
 
 # Target Group para N8N
 resource "aws_lb_target_group" "n8n" {
-  name     = "${var.ec2_name}-n8n-tg"
+  name     = "${replace(var.ec2_name, "_", "-")}-n8n-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = module.network.vpc_id
@@ -156,7 +156,7 @@ resource "aws_lb_target_group" "n8n" {
   }
 
   tags = {
-    Name = "${var.ec2_name}-n8n-tg"
+    Name = "${replace(var.ec2_name, "_", "-")}-n8n-tg"
   }
 }
 
