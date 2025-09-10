@@ -27,7 +27,7 @@ variable "ec2_count" {
 variable "ec2_name" {
   description = "Nome do projeto/instâncias EC2"
   type        = string
-  default     = "minha-instancia"
+  default     = "n8n-instancia"
 }
 
 variable "enable_ssm" {

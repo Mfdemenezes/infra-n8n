@@ -5,7 +5,7 @@ environment = "Dev"
 # Configurações EC2
 ec2_instance_type = "t2.micro"
 ec2_count         = 1
-ec2_name          = "my_instancia"
+ec2_name          = "n8n_instancia"
 enable_ssm        = true   # Habilitar SSM Session Manager
 
 
