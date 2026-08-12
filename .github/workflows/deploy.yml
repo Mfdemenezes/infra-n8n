@@ -26,6 +26,10 @@ on:
           - staging
           - prod
 
+permissions:
+  id-token: write   # necessario para OIDC
+  contents: read
+
 jobs:
   validate:
     name: Terraform Validate
@@ -41,8 +45,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::405894841048:role/GitHubActionsTerraformPlan
           aws-region: us-east-1
 
       - name: Set up Terraform
@@ -77,8 +80,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::405894841048:role/GitHubActionsTerraformPlan
           aws-region: us-east-1
 
       - name: Set up Terraform
@@ -134,8 +136,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::405894841048:role/GitHubActionsTerraformPlan
           aws-region: us-east-1
 
       - name: Set up Terraform
