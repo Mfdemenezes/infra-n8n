@@ -69,6 +69,22 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# Policy para permitir ssm:StartSession
+resource "aws_iam_role_policy" "ssm_start_session" {
+  count = var.enable_ssm ? 1 : 0
+  name  = "ssm-start-session"
+  role  = aws_iam_role.ec2_ssm[0].name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:StartSession", "ssm:TerminateSession", "ssm:ResumeSession"]
+      Resource = "*"
+    }]
+  })
+}
+
 # Create the EC2 instance profile
 resource "aws_iam_instance_profile" "ec2_ssm" {
   count = var.enable_ssm ? 1 : 0

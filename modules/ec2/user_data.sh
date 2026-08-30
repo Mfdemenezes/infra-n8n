@@ -75,7 +75,7 @@ services:
       - "5678:5678"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.n8n.rule=Host(`localhost`) || PathPrefix(`/`)
+      - traefik.http.routers.n8n.rule=PathPrefix(`/`)
       - traefik.http.routers.n8n.entrypoints=web
       - traefik.http.services.n8n.loadbalancer.server.port=5678
     environment:

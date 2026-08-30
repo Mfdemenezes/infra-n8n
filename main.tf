@@ -139,7 +139,7 @@ resource "aws_security_group" "alb" {
 # Target Group para N8N
 resource "aws_lb_target_group" "n8n" {
   name     = "${replace(var.ec2_name, "_", "-")}-n8n-tg"
-  port     = 80
+  port     = 5678
   protocol = "HTTP"
   vpc_id   = module.network.vpc_id
 
@@ -149,9 +149,9 @@ resource "aws_lb_target_group" "n8n" {
     unhealthy_threshold = 2
     timeout             = 10
     interval            = 30
-    path                = "/"
-    matcher             = "200,404"
-    port                = "80"
+    path                = "/healthz"
+    matcher             = "200"
+    port                = "5678"
     protocol            = "HTTP"
   }
 
@@ -177,7 +177,7 @@ resource "aws_lb_target_group_attachment" "n8n" {
   count            = length(module.ec2.instance_ids)
   target_group_arn = aws_lb_target_group.n8n.arn
   target_id        = module.ec2.instance_ids[count.index]
-  port             = 80
+  port             = 5678
 }
 
 # # Módulo CloudFront Distribution (desabilitado por enquanto)
